@@ -1,0 +1,15 @@
+version: '3.7'
+
+services:
+
+    routersploit-app:
+        container_name: routersploit-app
+        restart: unless-stopped
+        build:
+            context: .
+            dockerfile: Dockerfile
+        image: routersploit-app-image
+        volumes:
+            - .:/routersploit
+#        ports:
+#            - "8888:8888"

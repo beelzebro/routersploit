@@ -41,6 +41,7 @@ Any:12345
 CSG:SESAME
 Cisco:Cisco
 D-Link:D-Link
+admin:3UJUh2VemEfUtesEchEC2d2e
 DTA:TJM
 EZsetup:
 FIELD:HPONLY

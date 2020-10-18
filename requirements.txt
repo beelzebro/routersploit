@@ -3,3 +3,7 @@ requests==2.21.0
 paramiko
 pysnmp==4.4.6
 pycryptodome
+###installing fix requests
+#Uncomment the next line if you don't have pip installed
+#install >dev>pip install.txt>data>dev>install.py
+scapy

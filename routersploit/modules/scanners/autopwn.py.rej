@@ -1,0 +1,56 @@
+--- routersploit/modules/scanners/autopwn.py
++++ routersploit/modules/scanners/autopwn.py
+@@ -30,8 +30,7 @@ class Exploit(exploits.Exploit):
+     }
+     modules = ['routers', 'cameras', 'misc']
+ 
+-    target = exploits.Option('', 'Target IP address e.g. 192.168.1.1 or json str' +
+-                            ' {"http://192.168.1.1":80, "http://192.168.1.2":90}')  # target address
++    target = exploits.Option('', 'Target IP address e.g. 192.168.1.1')  # target address
+     port = exploits.Option(80, 'Target port')  # default port
+     threads = exploits.Option(8, "Number of threads")
+ 
+@@ -68,39 +64,17 @@ def check(self):
+         raise NotImplementedError("Check method is not available")
+ 
+     def target_function(self, exploit):
+-
+-        if isinstance(self.target, dict):
+-            self.multicheck(exploit)
+-        elif isinstance(self.target, str):
+-            self.siglecheck(exploit)
+-        else:
+-            pass
+-
+-
+-    def siglecheck(self, exploit):
+         exploit = exploit()
++        exploit.target = self.target
+         exploit.port = self.port
+-        exploit.target = self.target
+ 
+         response = exploit.check()
+-        self.getresponse(response, exploit)
+-
+-    def multicheck(self, exploit):
+-        for ip in self.target.keys():
+-            exp = exploit()
+-            exp.port = self.target[ip]
+-            exp.target = ip
+-
+-            response = exp.check()
+-            self.getresponse(response, exp)
+-
+ 
+-    def getresponse(self, response, exploit):
+         if response is True:
+-            print_success("ip {0} port {1} {2} is vulnerable".format(exploit.target, exploit.port, exploit))
++            print_success("{} is vulnerable".format(exploit))
+             self.vulnerabilities.append(exploit)
+         elif response is False:
+-            print_error("ip {0} port {1} {2} is vulnerable".format(exploit.target, exploit.port, exploit))
++            print_error("{} is not vulnerable".format(exploit))
+         else:
+-            print_status("ip {0} port {1} {2} is vulnerable".format(exploit.target, exploit.port, exploit))
++            print_status("{} could not be verified".format(exploit))
+             self.not_verified.append(exploit)
